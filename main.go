@@ -56,20 +56,15 @@ func main() {
 
 	ctlCode := scard.CtlCode(2079)
 
-	if resp, err := reader.Control(ctlCode, []byte{0x23, 0x00}); err != nil {
+	if _, err := reader.Control(ctlCode, []byte{0x23, 0x00}); err != nil {
 		log.Fatal(err)
-	} else {
-		fmt.Printf("%02X\n", resp)
 	}
-	if resp, err := reader.Control(ctlCode, []byte{0x23, 0x01, 0x8F}); err != nil {
+	if _, err := reader.Control(ctlCode, []byte{0x23, 0x01, 0x8F}); err != nil {
 		log.Fatal(err)
-	} else {
-		fmt.Printf("%02X\n", resp)
 	}
-
 	reader.Disconnect(scard.LeaveCard)
 
-	tick := time.NewTicker(300 * time.Millisecond)
+	tick := time.NewTicker(60 * time.Millisecond)
 	defer tick.Stop()
 
 	var lastUid string
