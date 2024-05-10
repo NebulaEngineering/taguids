@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/binary"
 	"encoding/hex"
 	"flag"
 	"fmt"
@@ -102,11 +103,24 @@ func main() {
 				return
 			}
 
-			if _, err := f.WriteString(uids + "\n"); err != nil {
+			// idbytes := make([]byte, 8)
+			idbytes_ := make([]byte, 8)
+
+			if len(uid[:len(uid)-2]) > 8 {
 				return
 			}
 
-			fmt.Printf("%s\n", uids)
+			// copy(idbytes, uid[:len(uid)-2])
+			copy(idbytes_[8-(len(uid)-2):], uid[:len(uid)-2])
+
+			// id := binary.LittleEndian.Uint64(idbytes)
+			id_ := binary.BigEndian.Uint64(idbytes_)
+
+			if _, err := f.WriteString(fmt.Sprintf("%d", id_) + "\n"); err != nil {
+				return
+			}
+
+			fmt.Printf("%d\n", id_)
 
 			lastUid = uids
 
