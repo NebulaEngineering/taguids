@@ -18,7 +18,7 @@ var (
 
 func init() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	flag.StringVar(&pathtofile, "f", "tags_uids.csv", "Path to file")
+	flag.StringVar(&pathtofile, "f", "tags_uids.txt", "Path to file")
 }
 
 func main() {
@@ -31,19 +31,6 @@ func main() {
 	}
 
 	defer f.Close()
-
-	fi, err := f.Stat()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if fi.Size() == 0 {
-		// Añadir la primera línea de encabezados
-		_, err = f.WriteString("UID\n") // Asegúrate de ajustar esto a tus encabezados necesarios
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
 
 	ctx, err := scard.EstablishContext()
 	if err != nil {
@@ -69,11 +56,15 @@ func main() {
 
 	ctlCode := scard.CtlCode(2079)
 
-	if _, err := reader.Control(ctlCode, []byte{0x23, 0x00}); err != nil {
+	if resp, err := reader.Control(ctlCode, []byte{0x23, 0x00}); err != nil {
 		log.Fatal(err)
+	} else {
+		fmt.Printf("%02X\n", resp)
 	}
-	if _, err := reader.Control(ctlCode, []byte{0x23, 0x01, 0x8F}); err != nil {
+	if resp, err := reader.Control(ctlCode, []byte{0x23, 0x01, 0x8F}); err != nil {
 		log.Fatal(err)
+	} else {
+		fmt.Printf("%02X\n", resp)
 	}
 
 	reader.Disconnect(scard.LeaveCard)
@@ -99,26 +90,16 @@ func main() {
 			if len(uid) <= 2 || uid[len(uid)-2] != 0x90 || uid[len(uid)-1] != 0x00 {
 				return
 			}
-			uids := hex.EncodeToString(uid)
+			uids := hex.EncodeToString(uid[:len(uid)-2])
 			if strings.EqualFold(uids, lastUid) {
 				return
 			}
-
-			// uidfinal := make([]byte, 8)
-
-			// copy(uidfinal[8-len(uid)-2:], uid[:len(uid)-2])
-
-			// id := binary.BigEndian.Uint64(uidfinal)
-
-			// if _, err := f.WriteString(uids + "," + fmt.Sprintf("%d", id) + "\n"); err != nil {
-			// 	log.Fatal(err)
-			// }
 
 			if _, err := f.WriteString(uids + "\n"); err != nil {
 				return
 			}
 
-			fmt.Printf("%02X\n", uid[:len(uid)-2])
+			fmt.Printf("%s\n", uids)
 
 			lastUid = uids
 
