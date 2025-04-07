@@ -14,17 +14,35 @@ import (
 )
 
 var (
-	pathtofile string
+	pathtofile    string
+	versionstring = "v1.0.6"
+	version       bool
 )
 
 func init() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 	flag.StringVar(&pathtofile, "f", "tags_uids.txt", "Path to file. data will be appended to this file [bytes; BigEndian; LittleEndian]")
+	flag.BoolVar(&version, "v", false, "Print version and exit")
 }
 
 func main() {
 
 	flag.Parse()
+
+	if version {
+		fmt.Printf("Version: %s\n", versionstring)
+		time.Sleep(4 * time.Second)
+		os.Exit(0)
+	}
+	dirpath, err := os.Getwd()
+	if err != nil {
+		log.Printf("Error getting current directory: %v", err)
+		time.Sleep(4 * time.Second)
+		os.Exit(-1)
+	}
+
+	fmt.Printf("Current path: %s/%s\n", dirpath, pathtofile)
+	fmt.Printf("detecting cards (version: %s)...\n", versionstring)
 
 	f, err := os.OpenFile(pathtofile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
@@ -120,7 +138,7 @@ func main() {
 				return
 			}
 
-			fmt.Printf("%d\n", id_)
+			fmt.Printf("%02X; %d; %d\n", uid[:len(uid)-2], id_, id)
 
 			lastUid = uids
 
