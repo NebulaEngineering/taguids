@@ -19,7 +19,7 @@ var (
 
 func init() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	flag.StringVar(&pathtofile, "f", "tags_uids.txt", "Path to file")
+	flag.StringVar(&pathtofile, "f", "tags_uids.txt", "Path to file. data will be appended to this file [bytes; BigEndian; LittleEndian]")
 }
 
 func main() {
@@ -113,10 +113,10 @@ func main() {
 			// copy(idbytes, uid[:len(uid)-2])
 			copy(idbytes_[8-(len(uid)-2):], uid[:len(uid)-2])
 
-			// id := binary.LittleEndian.Uint64(idbytes)
+			id := binary.LittleEndian.Uint64(idbytes_)
 			id_ := binary.BigEndian.Uint64(idbytes_)
 
-			if _, err := f.WriteString(fmt.Sprintf("%d", id_) + "\n"); err != nil {
+			if _, err := f.WriteString(fmt.Sprintf("%02X; %d; %d", uid[:len(uid)-2], id_, id) + "\n"); err != nil {
 				return
 			}
 
