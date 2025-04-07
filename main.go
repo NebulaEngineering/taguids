@@ -15,7 +15,7 @@ import (
 
 var (
 	pathtofile    string
-	versionstring = "v1.0.6"
+	versionstring = "v1.0.5"
 	version       bool
 )
 
